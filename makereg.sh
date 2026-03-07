@@ -1,5 +1,7 @@
 #!/bin/bash
 set -o errexit
+rm -rf linux-6.19
+curl -fL https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.19.tar.xz | tar -xJ &
 ./makeroot.sh
 clear
 cd root
@@ -8,8 +10,7 @@ find . -print0 \
  | zstd -19 -T0 > ../root.cpio.zst
 cd ..
 echo "Downloading linux..."
-rm -rf linux-6.19
-curl -fL https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.19.tar.xz | tar -xvJ
+wait
 clear
 cd linux-6.19
 clear

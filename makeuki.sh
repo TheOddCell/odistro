@@ -1,9 +1,10 @@
 #!/bin/bash
 set -o errexit
+curl -fL https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.19.tar.xz | tar -xJ
 ./makeroot.sh
 clear
 echo "Downloading linux..."
-curl -fL https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.19.tar.xz | tar -xvJ
+wait
 clear
 cd linux-6.19
 clear
