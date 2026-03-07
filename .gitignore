@@ -1,0 +1,10 @@
+*.efi
+*.uki
+*.cpio.zst
+rootfs
+linux-6.19
+busybox-1.37.0
+musl-1.2.5
+*.cpio
+musl-for-host-src
+musl-for-host
