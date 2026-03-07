@@ -5,16 +5,30 @@ mkdir root
 mkdir root/bin root/dev root/sys root/proc root/etc root/root
 ln -s .. root/usr
 cat>root/etc/inittab <<'EOF'
-::sysinit:/bin/mount -t devtmpfs devtmpfs /dev
 ::sysinit:/bin/mkdir -p /dev
-::sysinit:/bin/mknod -m 600 /dev/console c 5 1
-
+::sysinit:/bin/mount -t devtmpfs devtmpfs /dev
+::sysinit:/bin/mknod /dev/console c 5 1
+::sysinit:/bin/mknod /dev/null c 1 3
+::sysinit:/bin/mknod /dev/zero c 1 5
+::sysinit:/bin/mknod /dev/full c 1 7
+::sysinit:/bin/mknod /dev/random c 1 8
+::sysinit:/bin/mknod /dev/urandom c 1 9
+::sysinit:/bin/mknod /dev/tty c 5 0
+::sysinit:/bin/mknod /dev/ptmx c 5 2
 ::sysinit:/bin/mount -t proc proc /proc
 ::sysinit:/bin/mount -t sysfs sysfs /sys
+::sysinit:/bin/ln -s /proc/self/mounts /etc/mtab
 
 console::respawn:/bin/getty -L 115200 console vt100
 EOF
 echo 'root::0:0::/root:/bin/sh'>root/etc/passwd
+echo 'root:x:0:'>root/etc/group
+cat>root/etc/passwd << 'EOF'
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export PS1='\u@\h:\w\$ '
+EOF
+echo 'odistro'>root/etc/hostname
+echo '127.0.0.1 localhost'>root/etc/hosts
 cat>root/etc/os-release << 'EOF'
 NAME="oDistro"
 PRETTY_NAME="oDistro Busybox/Musl/Linux"
