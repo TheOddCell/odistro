@@ -8,4 +8,7 @@ Creates a root file system by compiling musl (twice) and busybox
 Uses `makeroot.sh` to make a rootfs and compiles it as an initramfs into a compiled efistub kernel (Inbuilt InitRamFS)
 
 ## `makeuki.sh`
-Uses `makeroot.sh` to make a rootfs, compiles the kernel, and uses systemd's ukify to make it into a bootable efi
+Uses `makeroot.sh` to make a rootfs, compiles the kernel with `makekern.sh`, and uses systemd's ukify to make it into a bootable efi
+
+## `makekern.sh`
+Compiles the kernel, nothing too complicated
