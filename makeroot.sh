@@ -1,4 +1,6 @@
 #!/bin/bash
+# odistro 1.37.0+1.2.5 rootfs builder
+ODISTROVERSION="1.37.0+1.2.5"
 set -o errexit
 rm -rf busybox-1.37.0 musl-1.2.5 root musl-for-host musl-for-host-src
 mkdir root
@@ -20,25 +22,28 @@ cat>root/etc/inittab <<'EOF'
 ::sysinit:/bin/ln -s /proc/self/mounts /etc/mtab
 
 console::respawn:/bin/getty -L 115200 console vt100
+
+::shutdown:/bin/umount -a -r
 EOF
-echo 'root::0:0::/root:/bin/sh'>root/etc/passwd
+echo 'root::0:0:root:/root:/bin/sh' > root/etc/passwd
 echo 'root:x:0:'>root/etc/group
-cat>root/etc/passwd << 'EOF'
+cat>root/etc/profile << 'EOF'
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PS1='\u@\h:\w\$ '
 EOF
+echo "Welcome to oDistro Busybox/Musl/Linux $ODISTROVERSION" > root/etc/issue
 echo 'odistro'>root/etc/hostname
 echo '127.0.0.1 localhost'>root/etc/hosts
-cat>root/etc/os-release << 'EOF'
-NAME="oDistro"
-PRETTY_NAME="oDistro Busybox/Musl/Linux"
+cat>root/etc/os-release << EOF
+NAME='oDistro'
+PRETTY_NAME='oDistro Busybox/Musl/Linux'
 ID=odistro
-BUILD_ID="1.37.0+1.2.5"
-HOME_URL="https://github.com/theoddcell/odistro"
-DOCUMENTATION_URL="https://github.com/theoddcell/odistro"
-SUPPORT_URL="https://github.com/TheOddCell/odistro/issues"
-BUG_REPORT_URL="https://github.com/TheOddCell/odistro/issues"
-PRIVACY_POLICY_URL="data:text/html,<h1>we dont collect data</h1><h2>how would we</h2><title>odistro privacy policy</title>"
+BUILD_ID='$ODISTROVERSION'
+HOME_URL='https://github.com/theoddcell/odistro'
+DOCUMENTATION_URL='https://github.com/theoddcell/odistro'
+SUPPORT_URL='https://github.com/TheOddCell/odistro/issues'
+BUG_REPORT_URL='https://github.com/TheOddCell/odistro/issues'
+PRIVACY_POLICY_URL='data:text/html,<h1>we dont collect data</h1><h2>how would we</h2><title>odistro privacy policy</title>'
 EOF
 clear
 echo "Downloading components..."
