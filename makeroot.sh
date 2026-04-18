@@ -47,7 +47,7 @@ PRIVACY_POLICY_URL='data:text/html,<h1>we dont collect data</h1><h2>how would we
 EOF
 clear
 echo "Downloading components..."
-curl -fL https://busybox.net/downloads/busybox-1.37.0.tar.bz2 | tar -xvj &
+curl -fL https://mirrors.slackware.com/slackware/slackware64-current/source/a/mkinitrd/busybox-1.37.0.tar.bz2 | tar -xvj &
 curl -fL https://musl.libc.org/releases/musl-1.2.5.tar.gz | tar -xvz
 clear
 # ---------------
