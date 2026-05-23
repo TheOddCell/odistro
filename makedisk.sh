@@ -1,5 +1,5 @@
 #!/bin/bash
-# Creates a flashable UEFI disk image with root on ext4 (not in RAM)
+# Creates a flashable UEFI disk image with root on ext4 and GRUB bootloader
 # Usage: ./makedisk.sh [image.img] [size]
 # Example: ./makedisk.sh odistro.img 2G
 set -o errexit
@@ -34,6 +34,7 @@ trap cleanup EXIT
 mkfs.fat -F32 -n ESP "${LOOP}p1"
 mkfs.ext4 -L odistro-root "${LOOP}p2"
 
+ROOT_UUID=$(blkid -s UUID -o value "${LOOP}p2")
 ROOT_PARTUUID=$(blkid -s PARTUUID -o value "${LOOP}p2")
 
 mkdir -p mnt/esp mnt/root
@@ -42,26 +43,38 @@ mount "${LOOP}p2" mnt/root
 
 echo "Installing root filesystem to disk..."
 cp -a root/. mnt/root/
-sync
-umount mnt/root
-rmdir mnt/root
+mkdir -p mnt/root/boot
+
+echo "Installing kernel..."
+cp vmlinuz.efi mnt/root/boot/vmlinuz
 
 case "$(uname -m)" in
-    x86_64)  EFI_FALLBACK="BOOTX64.EFI" ;;
-    aarch64) EFI_FALLBACK="BOOTAA64.EFI" ;;
-    *)       EFI_FALLBACK="BOOT.EFI" ;;
+    x86_64)  GRUB_TARGET="x86_64-efi" ;;
+    aarch64) GRUB_TARGET="arm64-efi" ;;
+    *)       echo "Unsupported arch: $(uname -m)"; exit 1 ;;
 esac
-mkdir -p "mnt/esp/EFI/BOOT"
 
-echo "Building UKI for disk boot..."
-ukify build \
-    --linux vmlinuz.efi \
-    --cmdline "root=PARTUUID=$ROOT_PARTUUID rw console=tty0 console=ttyS0,115200" \
-    --output "mnt/esp/EFI/BOOT/$EFI_FALLBACK"
+echo "Installing GRUB ($GRUB_TARGET)..."
+grub-install \
+    --target="$GRUB_TARGET" \
+    --efi-directory=mnt/esp \
+    --boot-directory=mnt/root/boot \
+    --removable \
+    --no-nvram
+
+cat > mnt/root/boot/grub/grub.cfg << EOF
+set default=0
+set timeout=3
+
+menuentry "odistro" {
+    search --no-floppy --set=root --fs-uuid $ROOT_UUID
+    linux /boot/vmlinuz root=PARTUUID=$ROOT_PARTUUID rw console=tty0 console=ttyS0,115200
+}
+EOF
 
 sync
-umount mnt/esp
-rmdir mnt/esp mnt
+umount mnt/esp mnt/root
+rmdir mnt/esp mnt/root mnt
 
 echo "Done! Flash with:"
 echo "  sudo dd if=$IMAGE of=/dev/sdX bs=4M status=progress"
