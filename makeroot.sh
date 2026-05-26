@@ -98,10 +98,11 @@ curl -fL https://www.openssl.org/source/openssl-3.5.0.tar.gz | tar -xvz
 ROOTDIR="$(realpath ./root)"
 echo "OpenSSL: configuring..."
 cd openssl-3.5.0
-CC="$HOSTDIR/bin/musl-gcc" ./Configure no-shared no-zlib no-secure-memory no-afalgeng no-module linux-x86_64 --prefix=/ --openssldir=/etc/ssl
+CC="$HOSTDIR/bin/musl-gcc" ./Configure no-shared no-zlib no-secure-memory no-afalgeng no-module linux-x86_64 --prefix=/ --openssldir=/etc/ssl --libdir=/lib
 echo "OpenSSL: compiling libs..."
 make -j$(nproc) build_libs
-make DESTDIR="$ROOTDIR" install_dev install_ssldirs
+make DESTDIR="$ROOTDIR" install_dev
+mkdir -p "$ROOTDIR/etc/ssl/certs" "$ROOTDIR/etc/ssl/private"
 cd ..
 clear
 # ------
