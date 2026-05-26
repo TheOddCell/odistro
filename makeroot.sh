@@ -99,9 +99,9 @@ ROOTDIR="$(realpath ./root)"
 echo "OpenSSL: configuring..."
 cd openssl-3.5.0
 CC="$HOSTDIR/bin/musl-gcc" ./Configure no-shared no-zlib no-secure-memory no-afalgeng no-module linux-x86_64 --prefix=/ --openssldir=/etc/ssl
-echo "OpenSSL: compiling..."
-make -j$(nproc)
-make DESTDIR="$ROOTDIR" install_sw install_ssldirs
+echo "OpenSSL: compiling libs..."
+make -j$(nproc) build_libs
+make DESTDIR="$ROOTDIR" install_dev install_ssldirs
 cd ..
 clear
 # ------
