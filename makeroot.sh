@@ -145,7 +145,7 @@ CONFIG_INTERNAL_LIBTOMMATH=y
 WPACFG
 echo "wpa_supplicant: compiling..."
 CC="$HOSTDIR/bin/musl-gcc" \
-    CFLAGS="-I$ROOTDIR/include -fno-link-libatomic" \
+    CFLAGS="-I$ROOTDIR/include -I/usr/include -fno-link-libatomic" \
     LIBS="-static -fno-link-libatomic -L$ROOTDIR/lib -lssl -lcrypto" \
     make -j$(nproc)
 cp wpa_supplicant wpa_cli "$ROOTDIR/bin/"
