@@ -2,7 +2,7 @@
 # odistro 1.37.0+1.2.5 rootfs builder
 ODISTROVERSION="1.37.0+1.2.5"
 set -o errexit
-rm -rf busybox-1.37.0 musl-1.2.5 root musl-for-host musl-for-host-src
+rm -rf busybox-1.37.0 musl-1.2.5 root musl-for-host musl-for-host-src openssl-3.5.0 curl-8.12.0 wpa_supplicant-2.11
 mkdir root
 mkdir root/bin root/dev root/sys root/proc root/etc root/root
 ln -s .. root/usr
@@ -90,4 +90,64 @@ cp busybox ../root/bin/busybox
 ln ../root/bin/busybox ../root/init
 clear
 cd ..
-rm -rf busybox-1.37.0 musl-1.2.5 musl-for-host musl-for-host-src
+# --------
+# openssl (dep for curl + wpa_supplicant)
+# --------
+echo "Downloading OpenSSL..."
+curl -fL https://www.openssl.org/source/openssl-3.5.0.tar.gz | tar -xvz
+ROOTDIR="$(realpath ./root)"
+echo "OpenSSL: configuring..."
+cd openssl-3.5.0
+CC="$HOSTDIR/bin/musl-gcc" ./Configure no-shared no-zlib linux-x86_64 --prefix=/ --openssldir=/etc/ssl
+echo "OpenSSL: compiling..."
+make -j$(nproc)
+make DESTDIR="$ROOTDIR" install_sw install_ssldirs
+cd ..
+clear
+# ------
+# curl
+# ------
+echo "Downloading curl..."
+curl -fL https://curl.se/download/curl-8.12.0.tar.gz | tar -xvz
+ROOTDIR="$(realpath ./root)"
+echo "curl: configuring..."
+cd curl-8.12.0
+CC="$HOSTDIR/bin/musl-gcc" \
+    LDFLAGS="-static -L$ROOTDIR/lib" \
+    CFLAGS="-I$ROOTDIR/include" \
+    PKG_CONFIG_PATH="$ROOTDIR/lib/pkgconfig" \
+    ./configure --prefix=/ --disable-shared --enable-static \
+        --with-openssl --without-libpsl --without-brotli --without-zstd --without-zlib
+echo "curl: compiling..."
+make -j$(nproc)
+make DESTDIR="$ROOTDIR" install
+cd ..
+clear
+# ----------------
+# wpa_supplicant
+# ----------------
+echo "Downloading wpa_supplicant..."
+curl -fL https://w1.fi/releases/wpa_supplicant-2.11.tar.gz | tar -xvz
+ROOTDIR="$(realpath ./root)"
+echo "wpa_supplicant: configuring..."
+cd wpa_supplicant-2.11/wpa_supplicant
+cat > .config << 'WPACFG'
+CONFIG_DRIVER_WEXT=y
+CONFIG_IEEE8021X_EAPOL=y
+CONFIG_EAP_MD5=y
+CONFIG_EAP_MSCHAPV2=y
+CONFIG_EAP_TLS=y
+CONFIG_EAP_PEAP=y
+CONFIG_EAP_TTLS=y
+CONFIG_TLS=openssl
+CONFIG_INTERNAL_LIBTOMMATH=y
+WPACFG
+echo "wpa_supplicant: compiling..."
+CC="$HOSTDIR/bin/musl-gcc" \
+    CFLAGS="-I$ROOTDIR/include" \
+    LIBS="-static -L$ROOTDIR/lib -lssl -lcrypto" \
+    make -j$(nproc)
+cp wpa_supplicant wpa_cli "$ROOTDIR/bin/"
+cd ../..
+clear
+rm -rf busybox-1.37.0 musl-1.2.5 musl-for-host musl-for-host-src openssl-3.5.0 curl-8.12.0 wpa_supplicant-2.11
