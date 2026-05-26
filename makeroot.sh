@@ -115,7 +115,7 @@ echo "curl: configuring..."
 cd curl-8.12.0
 CC="$HOSTDIR/bin/musl-gcc" \
     LDFLAGS="-static -L$ROOTDIR/lib" \
-    CFLAGS="-I$ROOTDIR/include" \
+    CFLAGS="-I$ROOTDIR/include -fno-link-libatomic" \
     PKG_CONFIG_PATH="$ROOTDIR/lib/pkgconfig" \
     ./configure --prefix=/ --disable-shared --enable-static \
         --with-openssl --without-libpsl --without-brotli --without-zstd --without-zlib
@@ -145,8 +145,8 @@ CONFIG_INTERNAL_LIBTOMMATH=y
 WPACFG
 echo "wpa_supplicant: compiling..."
 CC="$HOSTDIR/bin/musl-gcc" \
-    CFLAGS="-I$ROOTDIR/include" \
-    LIBS="-static -L$ROOTDIR/lib -lssl -lcrypto" \
+    CFLAGS="-I$ROOTDIR/include -fno-link-libatomic" \
+    LIBS="-static -fno-link-libatomic -L$ROOTDIR/lib -lssl -lcrypto" \
     make -j$(nproc)
 cp wpa_supplicant wpa_cli "$ROOTDIR/bin/"
 cd ../..  
