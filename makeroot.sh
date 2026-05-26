@@ -103,6 +103,8 @@ echo "OpenSSL: compiling libs..."
 make -j$(nproc) build_libs
 make DESTDIR="$ROOTDIR" install_dev
 mkdir -p "$ROOTDIR/etc/ssl/certs" "$ROOTDIR/etc/ssl/private"
+echo "Downloading CA certificates..."
+curl -fL https://curl.se/ca/cacert.pem -o "$ROOTDIR/etc/ssl/certs/ca-certificates.crt"
 cd ..
 clear
 # ------
