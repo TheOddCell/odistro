@@ -98,7 +98,7 @@ curl -fL https://www.openssl.org/source/openssl-3.5.0.tar.gz | tar -xvz
 ROOTDIR="$(realpath ./root)"
 echo "OpenSSL: configuring..."
 cd openssl-3.5.0
-CC="$HOSTDIR/bin/musl-gcc" ./Configure no-shared no-zlib linux-x86_64 --prefix=/ --openssldir=/etc/ssl
+CC="$HOSTDIR/bin/musl-gcc" ./Configure no-shared no-zlib no-secure-memory linux-x86_64 --prefix=/ --openssldir=/etc/ssl
 echo "OpenSSL: compiling..."
 make -j$(nproc)
 make DESTDIR="$ROOTDIR" install_sw install_ssldirs
@@ -148,6 +148,6 @@ CC="$HOSTDIR/bin/musl-gcc" \
     LIBS="-static -L$ROOTDIR/lib -lssl -lcrypto" \
     make -j$(nproc)
 cp wpa_supplicant wpa_cli "$ROOTDIR/bin/"
-cd ../..
+cd ../..  
 clear
 rm -rf busybox-1.37.0 musl-1.2.5 musl-for-host musl-for-host-src openssl-3.5.0 curl-8.12.0 wpa_supplicant-2.11
